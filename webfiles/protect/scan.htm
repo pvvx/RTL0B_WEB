@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-type" content="text/html; charset=utf-8">
+<title>WiFi Scan</title>
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+	~inc:menu.inc~
+	<div class="content">
+		<h2 class="title">
+			<div id="scanResult">Stations scanning...</div>
+		</h2>
+		<table id="aps" class="scan">
+			<tr><th>SSID</th><th>BSSID</th><th>Auth</th><th>Ch</th><th>RSSI</th><th>Hd</th></tr>
+		</table>
+		<form id="stform" style="display: none" method='post' action='timeout.htm'>
+			<table class="form">
+				<tr>
+					<td class="label">Select or input SSID:<input type='hidden' name='wifi_rdcfg' value='0x1C00'></td>
+					<td><input name='wifi_st_ssid' maxlength='31' value='~wifi_st_ssid~' id='inputssid'></td>
+					<td class="label">Type password:</td>
+					<td><input name='wifi_st_psw' maxlength='63' value='~wifi_st_psw~'></td>
+				</tr>
+				<tr>
+					<td class="label">BSSID:</td>
+					<td><input name='wifi_st_bssid' maxlength='31' value='~wifi_st_bssid~' id='inputbsid'></td>
+					<td class="label">AutoConnect:</td>
+					<td><input type='hidden' id='wifi_mode' name='wifi_mode' value='3'>
+						<input type='hidden' id='wifi_st_auth' name='wifi_st_auth' value='6'>
+						<input type='checkbox' id='wifi_st_aucn' name='wifi_st_aucn' value='1' onChange="newMode(this);"></td>
+				</tr>
+			</table>
+			<p class="center">
+				<input type='submit' value='Set Config' class="button">
+				<input type='hidden' name='wifi_newcfg' value='0x1a'>
+			</p>
+		</form>
+		<div id="connection"></div>
+	</div>
+	~inc:footer.inc~
+</body>
+<script src="/site.js"></script>
+<script src="/scripts.js"></script>
+<script type="text/javascript">
+var AUTH = {
+0:"OPEN",
+1:"WEP PSK",
+2:"WEP Shared",
+3:"WPA TKIP",
+4:"WPA AES",
+5:"WPA2 TKIP",
+6:"WPA2 AES",
+7:"WPA2 Mixed",
+8:"WPA2/WPA AES",
+9:"UNKNOWN"};
+var WPST = {
+0:"DEFAULT",
+1:"USER",
+2:"MACHINE",
+3:"REKEY",
+4:"PUSHBUTTON",
+5:"REGISTRAR",
+6:"NONE"};
+var BSST = {
+0:"INFRA",
+1:"ADHOC",
+2:"ANY",
+3:"UNKNOWN"};
+var cfg = { 
+wifi_st_aucn: "~wifi_mode~" & 1,
+wifi_mode: "~wifi_mode~" };
+setFormValues(document.forms[0], cfg);
+var startTime = new Date();
+newAJAXCommand('/web.cgi?wifi_scan=1');
+setTimeout("newAJAXCommand('scan.xml', updateScan)", 1600);
+function newMode(Obj) {
+	if (Obj.checked) $("wifi_mode").value = ~wifi_mode~ | 1;
+	else $("wifi_mode").value = ~wifi_mode~;
+}
+function updateScan(xmlData) {
+	if(!xmlData) return;
+	var total = getXMLValue(xmlData, 'total');
+	if (total==0) {
+		if((new Date()-startTime)>7000) {
+			startTime = new Date();
+			$('scanResult').innerHTML="Scan failed. Try again.";
+			newAJAXCommand('/web.cgi?wifi_scan=1');
+		}
+		else newAJAXCommand('scan.xml', updateScan);
+		return;
+	}
+	$('scanResult').innerHTML="Scan completed. " + total + " station(s) found.";
+	for(i = 0; i < total; i++){
+		var ap=xmlData.getElementsByTagName('ap')[i];
+		var ch=getXMLValue(ap, 'ch');
+		var au=getXMLValue(ap, 'au');
+		var bsid=getXMLValue(ap, 'bs');
+		var ssid=getXMLValue(ap, 'ss');
+		var rs=getXMLValue(ap, 'rs');
+		var hd=getXMLValue(ap, 'hd');
+		var ws=getXMLValue(ap, 'ws');
+		r=document.all.aps.insertRow();
+		c=r.insertCell(0);c.innerHTML="<a href=# >"+ssid+"</a>";c.ssid=ssid;c.bsid=bsid;c.au=au;c.onclick=onApClick;
+		c=r.insertCell(1);c.innerHTML="<a href=# >"+bsid+"</a>";c.ssid=ssid;c.bsid=bsid;c.au=au;c.onclick=onApClick;c.ondblclick=onInfo;c.title='DoubleClick = MF info';
+		(r.insertCell(2)).innerHTML=AUTH[au];
+		(r.insertCell(3)).innerText=ch;
+		(r.insertCell(4)).innerText=rs;
+		(r.insertCell(5)).innerHTML=BSST[hd];
+	}
+	$('stform').style.display='';
+}
+function onApClick() {
+	$('inputssid').value=this.ssid;
+	$('inputbsid').value=this.bsid;
+	$('wifi_st_auth').value=this.au;
+}
+function onInfo() {
+	s = this.bsid;
+	s=s.substring(0,8);s=s.replace(':','');
+    document.location.href = "http://standards.ieee.org/cgi-bin/ouisearch?"+s.replace(':','');
+}
+</script>
+</html>
