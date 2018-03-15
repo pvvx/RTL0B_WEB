@@ -59,9 +59,15 @@ bool ICACHE_FLASH_ATTR WebSocketAcceptKey(uint8_t* dkey, uint8_t* skey)
 		if(len > minsizeWebSocketKey) {
 			rtl_memcpy(&buff[len], WebSocketAddKey, sizeWebSocketAddKey+1);
 			device_mutex_lock(RT_DEV_LOCK_CRYPTO);
+			if(g_rtl_cipherEngine.isInit != 1) {
+#if DEBUGSOO > 1
+				info_printf("(crypto on!) ");
+#endif
+				rtl_cryptoEngine_init();
+			}
 			rtl_crypto_sha1(buff, len + sizeWebSocketAddKey, keybuf);
-			device_mutex_unlock(RT_DEV_LOCK_CRYPTO);
 //			rtl_cryptoEngine_info();
+			device_mutex_unlock(RT_DEV_LOCK_CRYPTO);
 			len = base64encode(dkey, FileNameSize, keybuf, CRYPTO_SHA1_DIGEST_LENGTH);
 #if DEBUGSOO > 2
 			os_printf("\ncha:'");

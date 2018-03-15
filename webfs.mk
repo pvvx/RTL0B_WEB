@@ -13,6 +13,10 @@ webfs:
 	
 $(OUT_WFS):webfs 
 
+.PHONY: flash_clear_feep
+flash_clear_feep:
+	@$(PYTHON) $(GCCMK_PATH)rtltool.py -p $(COM_PORT) es 0x004000 0x004000
+
 .PHONY: flash_webfs
 flash_webfs: $(OUT_WFS)
 	@$(PYTHON) $(GCCMK_PATH)rtltool.py -p $(COM_PORT) wf 0x0D0000 $(OUT_WFS)

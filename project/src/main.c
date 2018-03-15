@@ -6,10 +6,10 @@
 #include <example_entry.h>
 
 extern void user_init_thrd(void * par);
-extern void console_init(void);
-extern int rtl_cryptoEngine_init(void);
+//extern void console_init(void);
+//extern int rtl_cryptoEngine_init(void);
 extern int rtl_printf(const char *fmt, ...);
-extern void ReRegisterPlatformLogUart(void);
+//extern void ReRegisterPlatformLogUart(void);
 
 /**
   * @brief  Main program.
@@ -18,9 +18,7 @@ extern void ReRegisterPlatformLogUart(void);
   */
 int main(void)
 {
-	if ( rtl_cryptoEngine_init() != 0 ) {
-		error_printf("Crypto engine init failed!\r\n");
-	}
+//	DBG_ERR_MSG_ON(_DBG_MISC_); // print MISC On
 /*
 	ConfigDebugErr = -1;
 	ConfigDebugWarn = -1;
@@ -30,10 +28,6 @@ int main(void)
 	watchdog_init(CONFIG_WDG_ON);
 	watchdog_start();
 #endif
-
-	/* Initialize log uart and at command service */
-	console_init();
-
 
 	/* wlan & user_start intialization */
 	xTaskCreate(user_init_thrd, "user_init", 1024, NULL, tskIDLE_PRIORITY + 1 + PRIORITIE_OFFSET, NULL);

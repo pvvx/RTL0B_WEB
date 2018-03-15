@@ -2,13 +2,9 @@
 
 #if 1 //def CONFIG_AT_USR
 
-//#include "ameba_soc.h"
 #include "device.h"
 #include "FreeRTOS.h"
 #include "task.h"
-//#include "semphr.h"
-//#include "freertos_pmu.h"
-//#include "rtl_lib.h"
 
 #include "flash_utils.h"
 #include "sleep_ex_api.h"
@@ -26,7 +22,7 @@ extern char str_rom_41ch3Dch0A[]; // "========================================\n
 //------------------------------------------------------------------------------
 // Mem, Tasks info
 //------------------------------------------------------------------------------
-void fATST(int argc, unsigned char *argv[]) {
+void cmd_mem(int argc, unsigned char *argv[]) {
 		(void) argc; (void) argv;
 		printf("\nCLK CPU\t\t%d Hz\nRAM heap\t%d bytes\n",
 				CPU_ClkGet(0), xPortGetFreeHeapSize());
@@ -147,7 +143,7 @@ extern u32 Strtoul(
     IN  u32 base
 );
 
-LOCAL void fATSB_(int argc, unsigned char *argv[])
+LOCAL void cmd_db(int argc, unsigned char *argv[])
 {
 	int size = 16;
 	uint32_t addr = Strtoul(argv[1],0,16);
@@ -168,7 +164,7 @@ LOCAL void fATSB_(int argc, unsigned char *argv[])
 //------------------------------------------------------------------------------
 // Deep sleep
 //------------------------------------------------------------------------------
-LOCAL void fATDS(int argc, unsigned char *argv[])
+LOCAL void cmd_dslp(int argc, unsigned char *argv[])
 {
     uint32_t sleep_ms = 10000;
     if(argc > 1) sleep_ms = atoi(argv[1]);
@@ -177,7 +173,7 @@ LOCAL void fATDS(int argc, unsigned char *argv[])
 /*------------------------------------------------------------------------------
  * power saving mode
  *----------------------------------------------------------------------------*/
-LOCAL void fATSP_(int argc, unsigned char *argv[])
+LOCAL void cmd_wake(int argc, unsigned char *argv[])
 {
 	if(argc > 2) {
 		switch (argv[1][0]) {
@@ -198,18 +194,18 @@ LOCAL void fATSP_(int argc, unsigned char *argv[])
 /*------------------------------------------------------------------------------
  * Flash info
  *----------------------------------------------------------------------------*/
-LOCAL void fATFI(int argc, unsigned char *argv[]) {
+LOCAL void cmd_fid(int argc, unsigned char *argv[]) {
 	int size = flash_get_size();
 	printf("Flash ID: 0x%06x, Size: %d bytes, Status: 0x%x\n", flash_id, size, flash_get_status(&flashobj));
 }
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
 MON_RAM_TAB_SECTION MON_COMMAND_TABLE console_commands_at[] = {
-		{"DB", 1, fATSB_, "=<ADDRES(hex)>[,COUNT(dec)]: Dump byte register"},
-		{"FID", 0, fATFI, ": Flash info"},
-		{"MEM", 0, fATST, ": Memory info"},
-		{"DPSLP", 0, fATDS, "=[TIME(ms)]: Deep sleep"},
-		{"WAKE", 0, fATSP_, "=<a,r>,<wakelock_status:0..31>: Power"}
+		{"DB", 1, cmd_db, "=<ADDRES(hex)>[,COUNT(dec)]: Dump byte register"},
+		{"FID", 0, cmd_fid, ": Flash info"},
+		{"MEM", 0, cmd_mem, ": Memory info"},
+		{"DPSLP", 0, cmd_dslp, "=[TIME(ms)]: Deep sleep"},
+		{"WAKE", 0, cmd_wake, "=<a,r>,<wakelock_status:0..31>: Power"}
 };
 
 #endif //#ifdef CONFIG_AT_USR

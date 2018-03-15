@@ -19,7 +19,7 @@ extern "C" {
 //-----------------------------------------------------------------------------
 #define FMEMORY_SCFG_BANK_SIZE	FLASH_SECTOR_SIZE // размер сектора, 4096 bytes
 #define FMEMORY_SCFG_BANKS 		4 // кол-во секторов для работы 2..
-#define FMEMORY_SCFG_BASE_ADDR	(0x8000 - (FMEMORY_SCFG_BANKS*FMEMORY_SCFG_BANK_SIZE)) // = 0x6000
+#define FMEMORY_SCFG_BASE_ADDR	(0x8000 - (FMEMORY_SCFG_BANKS*FMEMORY_SCFG_BANK_SIZE)) // = 0x4000
 //-----------------------------------------------------------------------------
 enum eFMEMORY_ERRORS {
 	FMEM_NOT_FOUND = -1,	//  -1 - не найден

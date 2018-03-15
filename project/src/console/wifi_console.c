@@ -28,7 +28,7 @@ extern char str_rom_41ch3Dch0A[]; // "========================================\n
 //--- CONSOLE --------------------------
 
 // ATPN=<SSID>[,password[,encryption[,auto reconnect[,reconnect pause]]]: WIFI Connect to AP
-LOCAL void fATPN(int argc, unsigned char *argv[]){
+LOCAL void cmd_sta(int argc, unsigned char *argv[]){
 	if(argc > 1) {
 		if(argv[1][0] == '?') {
 			show_wifi_st_cfg();
@@ -82,7 +82,7 @@ LOCAL void fATPN(int argc, unsigned char *argv[]){
 }
 
 // ATPA=<SSID>[,password[,encryption[,channel[,hidden[,max connections]]]]]: Start WIFI AP
-LOCAL void fATPA(int argc, unsigned char *argv[]){
+LOCAL void cmd_ap(int argc, unsigned char *argv[]){
 	if(argc > 1) {
 		if(argv[1][0] == '?') {
 			show_wifi_ap_cfg();
@@ -134,7 +134,7 @@ LOCAL void fATPA(int argc, unsigned char *argv[]){
 }
 
 // WIFI Connect, Disconnect
-LOCAL void fATWR(int argc, unsigned char *argv[]){
+LOCAL void cmd_mode(int argc, unsigned char *argv[]){
 	rtw_mode_t mode = RTW_MODE_NONE;
 	if(argc > 1) mode = atoi(argv[1]);
 #if CONFIG_WLAN_CONNECT_CB
@@ -143,7 +143,7 @@ LOCAL void fATWR(int argc, unsigned char *argv[]){
 	wifi_run(mode);
 }
 
-LOCAL void fATWI(int argc, unsigned char *argv[]) {
+LOCAL void cmd_winfo(int argc, unsigned char *argv[]) {
 #if 1
 	if(argc > 2) {
 		uint8_t c = argv[1][0] | 0x20;
@@ -200,10 +200,12 @@ LOCAL void fATWI(int argc, unsigned char *argv[]) {
 	printf("\n");
 }
 
+#if 0
+#define cmd_txpow_ena
 extern uint8_t rtw_power_percentage_idx;
 extern int rltk_set_tx_power_percentage(rtw_tx_pwr_percentage_t power_percentage_idx);
 
-void fATWT(int argc, unsigned char *argv[]) {
+LOCAL void cmd_txpow(int argc, unsigned char *argv[]) {
 	(void) argc; (void) argv;
 	if(argc > 1) {
 		int txpwr = atoi(argv[1]);
@@ -214,6 +216,7 @@ void fATWT(int argc, unsigned char *argv[]) {
 	}
 	printf("TX power = %d\n", rtw_power_percentage_idx);
 }
+#endif
 
 /*
 //-- Test tsf (64-bits counts, 1 us step) ---
@@ -231,34 +234,13 @@ LOCAL uint64_t get_tsf(void)
 	return *((uint64_t *)(WIFI_REG_BASE + REG_TSFTR));
 }
 */
-
-void fATSF(int argc, unsigned char *argv[])
+#if 0
+#define cmd_tsf_ena
+LOCAL void cmd_tsf(int argc, unsigned char *argv[])
 {
 	(void) argc; (void) argv;
 	uint64_t tsf = wifi_get_tsf();
 	printf("\nTSF: %08x%08x\n", (uint32_t)(tsf>>32), (uint32_t)(tsf));
-}
-#if 0
-/*------------------------------------------------------------------------------
- * power saving mode
- *----------------------------------------------------------------------------*/
-LOCAL void fATSP_(int argc, unsigned char *argv[])
-{
-	if(argc > 2) {
-		switch (argv[1][0]) {
-		case 'a': // acquire
-		{
-			pmu_acquire_wakelock(1<<atoi(argv[2]));
-			break;
-		}
-		case 'r': // release
-		{
-			pmu_release_wakelock(1<<atoi(argv[2]));
-			break;
-		}
-		};
-	};
-	printf("WakeLock Status %d\n", pmu_get_wakelock_status());
 }
 #endif
 /* --------  WiFi Scan ------------------------------- */
@@ -291,7 +273,7 @@ LOCAL rtw_result_t scan_result_handler(internal_scan_handler_t* ap_scan_result)
 	return RTW_SUCCESS;
 }
 /* --------  WiFi Scan ------------------------------- */
-void fATSN(int argc, unsigned char *argv[])
+LOCAL void cmd_scan(int argc, unsigned char *argv[])
 {
 	(void) argc;
 	(void) argv;
@@ -320,8 +302,9 @@ extern void cmd_p2p_peers(int argc, char **argv);
 #endif //CONFIG_ENABLE_P2P
 
 MON_RAM_TAB_SECTION MON_COMMAND_TABLE console_cmd_wifi_api[] = {
-		{"STA", 1, fATPN, "=<SSID>[,password[,encryption[,auto-reconnect[,reconnect pause]]]: WIFI Connect to AP"},
-		{"AP", 1, fATPA, "=<SSID>[,password[,encryption[,channel[,hidden[,max connections]]]]]: Start WIFI AP"},
+		{"MODE", 0, cmd_mode, "=[mode]: WIFI Mode: 0 - off, 1 - ST, 2 - AP, 3 - ST+AP, 4 - PROMISC, 5 - P2P"},
+		{"AP", 1, cmd_ap, "=<SSID>[,password[,encryption[,channel[,hidden[,max connections]]]]]: Start WIFI AP"},
+		{"STA", 1, cmd_sta, "=<SSID>[,password[,encryption[,auto-reconnect[,reconnect pause]]]: WIFI Connect to AP"},
 #if defined(CONFIG_ENABLE_WPS_AP) && CONFIG_ENABLE_WPS_AP
 		{"WPS_AP", 1, cmd_ap_wps, "=<pbc/pin>[,pin]: WiFi AP WPS"},
 		{"WPS_ST", 1, cmd_wps, "=<pbc/pin>[,pin]: WiFi Station WPS"},
@@ -336,13 +319,14 @@ MON_RAM_TAB_SECTION MON_COMMAND_TABLE console_cmd_wifi_api[] = {
 		{"P2P_DISCCONNECT", 0, cmd_p2p_disconnect, ": p2p disconnect"},
 		{"P2P_CONNECT", 0, cmd_p2p_connect, ": p2p connect"},
 #endif
-		{"MODE", 0, fATWR, "=[mode]: WIFI Mode: 0 - off, 1 - ST, 2 - AP, 3 - ST+AP, 4 - PROMISC, 5 - P2P"},
-		{"WINFO", 0, fATWI, ": WiFi Info"},
-#if CONFIG_DEBUG_LOG > 3
-		{"TXPOW", 1, fATWT, "=<tx_power>: WiFi tx power: 0 - 100%, 1 - 75%, 2 - 50%, 3 - 25%, 4 - 12.5%"},
-		{"TSF", 0, fATSF, ": Get TSF value"},
+#ifdef cmd_txpow_ena
+		{"TXPOW", 1, cmd_txpow, "=<tx_power>: WiFi tx power: 0 - 100%, 1 - 75%, 2 - 50%, 3 - 25%, 4 - 12.5%"},
 #endif
-//		{"ATWP", 0, fATWP, "=[dtim]: 0 - WiFi ipc/lpc off, 1..10 - on + dtim"},
-		{"SCAN", 0, fATSN, ": Scan networks"}
+#ifdef cmd_tfs_ena
+		{"TSF", 0, cmd_tsf, ": Get TSF value"},
+#endif
+//		{"ATWP", 0, cmd_wlsp, "=[dtim]: 0 - WiFi ipc/lpc off, 1..10 - on + dtim"},
+		{"WINFO", 0, cmd_winfo, ": WiFi Info"},
+		{"SCAN", 0, cmd_scan, ": Scan networks"}
 };
 

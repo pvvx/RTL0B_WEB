@@ -57,3 +57,7 @@ flash_webfs:
 upload_webfs:
 	@$(MAKE) -f webfs.mk upload_webfs
 	
+.PHONY: flash_clear_feep
+flash_clear_feep:
+	@$(MAKE) -f webfs.mk flash_clear_feep
+	

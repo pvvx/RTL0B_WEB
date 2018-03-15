@@ -81,7 +81,7 @@ extern unsigned char ap_ip[4], ap_netmask[4], ap_gw[4];
 /*Static IP ADDRESS*/
 #define IP_ADDR0   192
 #define IP_ADDR1   168
-#define IP_ADDR2   1
+#define IP_ADDR2   4
 #define IP_ADDR3   80
 
 /*NETMASK*/
@@ -93,7 +93,7 @@ extern unsigned char ap_ip[4], ap_netmask[4], ap_gw[4];
 /*Gateway Address*/
 #define GW_ADDR0   192
 #define GW_ADDR1   168
-#define GW_ADDR2   1
+#define GW_ADDR2   4
 #define GW_ADDR3   1
 
 /*******************************************/

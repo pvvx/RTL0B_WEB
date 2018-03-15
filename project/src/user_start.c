@@ -72,7 +72,10 @@ void user_init_thrd(void * par) {
 	}
 	else flash_read_cfg(&syscfg, FEEP_ID_SYS_CFG, sizeof(syscfg));
 
-	if(!syscfg.cfg.b.debug_print_enable) ConfigDebugClose = 1;
+	if(!syscfg.cfg.b.debug_print_enable)
+		ConfigDebugClose = 1;
+	else
+		ConfigDebugClose = 0;
 
 	/* Initilaize the console stack */
 	console_init();
@@ -82,14 +85,6 @@ void user_init_thrd(void * par) {
 
 	/* Load cfg, init WiFi + LwIP init, WiFi start if wifi_cfg.mode !=  RTW_MODE_NONE */
 	wifi_init();
-
-#if (defined(CONFIG_CRYPTO_STARTUP) && (CONFIG_CRYPTO_STARTUP))
-	 if(rtl_cryptoEngine_init() != 0 ) {
-		 error_printf("Crypto engine init failed!\n");
-	 }
-#else
-//	 rtl_cryptoEngine_deinit();
-#endif
 
 #if defined(USE_NETBIOS)
 	if(syscfg.cfg.b.netbios_ena) netbios_init();

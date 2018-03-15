@@ -234,18 +234,14 @@ void RtlConsolTaskRam(void *Data) {
 			if (argc) {
 				StrUpr(ArgvArray[0]);
 				PMON_COMMAND_TABLE pcmd = (PMON_COMMAND_TABLE)p->pCmdTbl;
-#if  ADD_ROM_MON
 				int flg = 1;
-#endif
 #ifdef USE_ROM_CONSOLE
 				for(int i = 0; i < p->CmdTblSz; i++) {
 #else
 				while (pcmd->cmd) {
 #endif
 					if (prvStrCmp(ArgvArray[0], pcmd->cmd) == 0) {
-#if  ADD_ROM_MON
 						flg = 0;
-#endif
 						if (pcmd->ArgvCnt < argc) {
 #ifdef USE_ROM_CONSOLE
 							pcmd->func(argc-1, (uint8_t **) &ArgvArray[1]);
@@ -277,10 +273,10 @@ void RtlConsolTaskRam(void *Data) {
 						}
 						pcmd++;
 					}
-					if (flg)
-						DiagPrintf("cmd: %s - nothing!\n", ArgvArray[0]);
 				}
 #endif
+				if (flg)
+					DiagPrintf("cmd: %s - nothing!\n", ArgvArray[0]);
 //				pmu_release_wakelock(PMU_LOGUART_DEVICE);
 			}
 //			else
@@ -380,6 +376,7 @@ void console_init(void) {
 		DiagPrintf("Create Log UART Task Err!\n");
 	}
 }
+
 #ifndef USE_ROM_CONSOLE
 //======================================================
 //<Function>:  console_help
@@ -418,14 +415,13 @@ _WEAK void console_help(int argc, unsigned char *argv[]) { 	// Help
 #endif
 }
 
- void print_on(int argc, unsigned char *argv[])
- {
+static void _Cmd_print_on(int argc, unsigned char *argv[]) {
 	(void)argc;
 	ConfigDebugClose = argv[1][0]!='1';
- }
+}
 
 // REBOOT
-void _CmdReboot(int argc, unsigned char *argv[]) {
+static void _Cmd_Reboot(int argc, unsigned char *argv[]) {
 //	CmdReboot(argc-1, argv[1]);
 	if(argc && argv[1][0]=='1') BKUP_Set(0, BIT_UARTBURN_BOOT);
 	BKUP_Set(0, BIT_SYS_RESET_HAPPEN);
@@ -436,8 +432,9 @@ void _CmdReboot(int argc, unsigned char *argv[]) {
 //#define MON_RAM_TAB_SECTION	SECTION(".mon.tab.rodata")
 // (!) размещается в специальном сегменте '.mon.tab*' (см. *.ld файл)
 MON_RAM_TAB_SECTION MON_COMMAND_TABLE console_commands[] = {
-		{"PR", 1, print_on, "=<1/0>: Printf on/off"},	// Help
-		{"REBOOT", 0, _CmdReboot, ": <1 - uartburn>" },
+		{"PR", 1, _Cmd_print_on, "=<1/0>: Printf on/off"},	// Help
+		{"REBOOT", 0, _Cmd_Reboot, ": <1 - uartburn>" },
 		{ "?", 0, console_help, ": This Help" }	// Help
 };
+
 #endif

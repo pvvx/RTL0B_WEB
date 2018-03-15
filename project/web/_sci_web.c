@@ -11,6 +11,7 @@
 #include "task.h"
 #include "diag.h"
 #include "hal_crypto.h"
+#include "rtl8711b_crypto.h"
 #include "lwip/tcp.h"
 #include "web/tcp_srv_conn.h"
 #include "web/web_srv_int.h"
