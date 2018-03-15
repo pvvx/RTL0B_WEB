@@ -5,15 +5,10 @@
   * @version
   * @brief   This file provides the functions related to event handler mechanism.
   ******************************************************************************
-  * @attention
-  *
-  * This module is a confidential and proprietary property of RealTek and
-  * possession or use of this module requires written permission of RealTek.
-  *
   * Copyright(c) 2016, Realtek Semiconductor Corporation. All rights reserved.
   ****************************************************************************** 
   */
-  
+
 #ifndef _WIFI_INDICATE_H
 #define _WIFI_INDICATE_H
 
